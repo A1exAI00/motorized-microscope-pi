@@ -581,10 +581,10 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
 
                 print(direction)
                 
-                if direction == '+':
-                    motor.move_relative(amount, speed)
-                else:
+                if direction == '-':
                     motor.move_relative(-amount, speed)
+                else:
+                    motor.move_relative(amount, speed)
                 
                 self.send_json_response(self.get_status())
             
