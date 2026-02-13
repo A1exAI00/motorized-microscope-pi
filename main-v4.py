@@ -559,7 +559,7 @@ class BurstTaker:
             # Capture image
             time.sleep(0.1)  # Small delay for motor to settle
             request = picam2.capture_request()
-            request.save("main", f"{self.burst_dir}/burst_{pos:04d}.jpeg")
+            request.save("main", f"{self.burst_dir}/unedited_images/burst_{pos:04d}.jpeg")
             request.release()
 
         logging.info(f"Burst completed with {self.num_images} images")
@@ -596,7 +596,7 @@ class FocusStackingThread:
         logging.info(f"Starting focus stacking")
 
         job = shinestacker.StackJob(
-            self.burst_dir, working_path=self.burst_dir, input_path=self.burst_dir
+            self.burst_dir, working_path=self.burst_dir, input_path="unedited_images",
         )
         job.add_action(
             shinestacker.CombinedActions(

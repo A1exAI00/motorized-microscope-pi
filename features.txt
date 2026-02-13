@@ -22,3 +22,5 @@
             - Input field: End position
             - Input field: Number of images
             - Button "Take burst". When it is pressed, motor is moved to the start position, takes N number in image while moving to end position. Images should be saved in a directory "burst_XXX" where XXX is an ordinal number of the burst (for example, if burst_001 already exists, script should check if burst_002 exists and etc). Burst images should be named "burst_XXXX.jpeg" where XXXX is the position. For example, burst_0100.jpeg is an image taken at position 100. Note that position can be negative.
+- TODO: shinestacker is used for focus stacking
+- TODO: take burst images with max resolution
