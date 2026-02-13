@@ -4,7 +4,7 @@
     - STEP pin connected to GPIO27.
     - SLEEP pin connected to GPIO22.
     - Microstepping is at 1/32.
-    - When moving, SLEEP pin is pulled high. After movement complete, SLEEP pin is pulled low.
+    - When starting script, SLEEP pin is pulled high. When stopping script, SLEEP pin is pulled low.
     - pigpio library is used to control signals sent to stepper driver.
 - In web GUI there is a vertical divider, which can be moved left and right.
     - In the section to the left from the divider there is a camera feed. Camera image is scaled to fit in the section.
