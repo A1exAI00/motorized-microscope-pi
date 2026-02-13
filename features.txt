@@ -5,14 +5,16 @@
     - SLEEP pin connected to GPIO22.
     - Microstepping is at 1/32.
     - When moving, SLEEP pin is pulled high. After movement complete, SLEEP pin is pulled low.
+    - pigpio library is used to control signals sent to stepper driver.
 - In web GUI there is a vertical divider, which can be moved left and right.
     - In the section to the left from the divider there is a camera feed. Camera image is scaled to fit in the section.
     - In the section to the right from the divider there are controls for the focusing stepper motor. They are divided horizontally.
         - At the top is emergency stop button that should ignore all current jobs and stop everything.
         - First subsection is the "Jog panel": a row of the following elements:
             - Input field: Speed (steps per second). Default to 1000 steps per second.
+            - Input field: Acceleration (steps per second per second). Default to 1000.
             - Input field: Movement amount (steps). Default to 100 steps.
-            - "+" and "-" buttons. When "+"/"-" button is pressed, stepper moves a number of steps equal to "Movement amount" field in the positive/negative direction and "Target position" is updated.
+            - "+" and "-" buttons. When "+"/"-" button is pressed, stepper moves a number of steps equal to "Movement amount" field in the positive/negative direction and "Target position" is updated. Start and end acceleration of movement is note infinite, and equals "Acceleration" field.
             - Read-only field: Current position (steps). Initial position is 0. Note that it can be negative.
             - Button "Set zero" to reset the current position to 0.
         - Secong subsection is the "Image burst panel", a row of the following elements:
