@@ -386,7 +386,10 @@ class StepperMotor:
             self.pi.write(self.step_pin, 0)
             
             # Wait for next step based on current speed
-            time.sleep(1 / (speed * current_speed))
+            try:
+                time.sleep(1 / (speed * current_speed))
+            except:
+                time.sleep(1 / (speed))
         
         with self.lock:
             self.current_position = self.target_position
