@@ -12,6 +12,10 @@ from picamera2 import Picamera2
 from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 
+GUI_WIDTH, GUI_HEIGHT = 1000, 1000
+# IMAGE_WIDTH, IMAGE_HEIGHT = 2000, 2000
+IMAGE_WIDTH, IMAGE_HEIGHT = 1500, 1500
+
 PAGE = """\
 <html>
 <head>
@@ -19,7 +23,7 @@ PAGE = """\
 </head>
 <body>
 <h1>Picamera2 MJPEG Streaming Demo</h1>
-<img src="stream.mjpg" width="640" height="480" />
+<img src="stream.mjpg" width="{GUI_WIDTH}" height="{GUI_HEIGHT}" />
 </body>
 </html>
 """
@@ -82,7 +86,7 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 
 
 picam2 = Picamera2()
-picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
+picam2.configure(picam2.create_video_configuration(main={"size": (IMAGE_WIDTH, IMAGE_HEIGHT)}))
 output = StreamingOutput()
 picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
