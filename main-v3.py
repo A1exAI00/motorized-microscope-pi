@@ -472,9 +472,6 @@ class MotorController:
             # Delay for the next step
             time.sleep(1.0 / current_speed)
             
-            if callback and i % 100 == 0:
-                callback(i / abs_steps * 100)
-        
         with self.lock:
             self.moving = False
             self.sleep()
