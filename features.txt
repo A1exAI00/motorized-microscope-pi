@@ -1,0 +1,22 @@
+- Web GUI is available at IP-ADDRESS:8000
+- Focusing stepper motor is attached.
+    - DIR pin connected to GPIO17.
+    - STEP pin connected to GPIO27.
+    - SLEEP pin connected to GPIO22.
+    - Microstepping is at 1/32.
+    - When moving, SLEEP pin is pulled high. After movement complete, SLEEP pin is pulled low.
+- In web GUI there is a vertical divider, which can be moved left and right.
+    - In the section to the left from the divider there is a camera feed. Camera image is scaled to fit in the section.
+    - In the section to the right from the divider there are controls for the focusing stepper motor. They are divided horizontally.
+        - At the top is emergency stop button that should ignore all current jobs and stop everything.
+        - First subsection is the "Jog panel": a row of the following elements:
+            - Input field: Speed (steps per second). Default to 1000 steps per second.
+            - Input field: Movement amount (steps). Default to 100 steps.
+            - "+" and "-" buttons. When "+"/"-" button is pressed, stepper moves a number of steps equal to "Movement amount" field in the positive/negative direction and "Target position" is updated.
+            - Read-only field: Current position (steps). Initial position is 0. Note that it can be negative.
+            - Button "Set zero" to reset the current position to 0.
+        - Secong subsection is the "Image burst panel", a row of the following elements:
+            - Input field: Start position
+            - Input field: End position
+            - Input field: Number of images
+            - Button "Take burst". When it is pressed, motor is moved to the start position, takes N number in image while moving to end position. Images should be saved in a directory "burst_XXX" where XXX is an ordinal number of the burst (for example, if burst_001 already exists, script should check if burst_002 exists and etc). Burst images should be named "burst_XXXX.jpeg" where XXXX is the position. For example, burst_0100.jpeg is an image taken at position 100. Note that position can be negative.
