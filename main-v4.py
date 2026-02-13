@@ -575,7 +575,7 @@ def take_burst(start_pos, end_pos, num_images, speed, acceleration):
 
     logging.info(f"Starting focus stacking")
     try:
-        job = shinestacker.StackJob(burst_dir, input_path=burst_dir)
+        job = shinestacker.StackJob(burst_dir, working_path=os.getcwd(), input_path=burst_dir)
         job.add_action(
             shinestacker.CombinedActions(
                 "align", actions=[shinestacker.AlignFrames(), shinestacker.BalanceFrames()]
