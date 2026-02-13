@@ -578,6 +578,8 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 direction = query.get('direction', ['+'])[0]
                 speed = int(query.get('speed', [1000])[0])
                 amount = int(query.get('amount', [100])[0])
+
+                print(direction)
                 
                 if direction == '+':
                     motor.move_relative(amount, speed)
