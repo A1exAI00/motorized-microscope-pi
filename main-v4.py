@@ -12,6 +12,7 @@ from threading import Condition, Thread, Lock
 import json
 
 import pigpio
+
 from picamera2 import Picamera2
 from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
@@ -592,8 +593,9 @@ def take_burst(start_pos, end_pos, num_images, speed, acceleration):
         #     shinestacker.FocusStack("stack", shinestacker.DepthMapStack(), prefix="dmap_")
         # )
         job.run()
-    except Exception as e: 
-        logging.info(f"Failed to  focus stacking: {e}")
+    except Exception as e:
+        print(f"FOCUS STACKING FAIL! {e}")
+        logging.info(f"Failed to focus stacking: {e}")
 
 
 # Initialize pigpio
