@@ -538,7 +538,7 @@ class BurstTaker:
     def take_burst(self):
 
         self.burst_dir = self._find_next_available_directory()
-        os.makedirs(self.burst_dir, exist_ok=True)
+        os.makedirs("/".join([self.burst_dir, "unedited_images"]), exist_ok=True)
 
         positions = self._calculate_positions_for_burst()
 
