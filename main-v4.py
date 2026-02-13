@@ -507,9 +507,11 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             acceleration = data.get("acceleration", 1000)
 
             # Start burst in a separate thread
+            burst_taker = BurstTaker(
+                start_pos, end_pos, num_images, speed, acceleration
+            )
             Thread(
-                target=take_burst,
-                args=(start_pos, end_pos, num_images, speed, acceleration),
+                target=burst_taker.take_burst,
             ).start()
 
             self.send_response(200)
@@ -525,60 +527,81 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     daemon_threads = True
 
 
-def take_burst(start_pos, end_pos, num_images, speed, acceleration):
-    """Take a burst of images while moving from start to end position"""
-    global burst_counter
+class BurstTaker:
+    def __init__(self, start_pos, end_pos, num_images, speed, acceleration):
+        self.start_pos = start_pos
+        self.end_pos = end_pos
+        self.num_images = num_images
+        self.speed = speed
+        self.acceleration = acceleration
 
-    # Find next available burst directory
-    burst_num = 1
-    while os.path.exists(f"burst_{burst_num:03d}"):
-        burst_num += 1
+    def take_burst(self):
 
-    burst_dir = f"burst_{burst_num:03d}"
-    os.makedirs(burst_dir, exist_ok=True)
+        self.burst_dir = self._find_next_available_directory()
+        os.makedirs(self.burst_dir, exist_ok=True)
 
-    # Move to start position
-    z_stepper.move_to(start_pos, speed, acceleration)
-    while z_stepper.is_moving:
-        time.sleep(0.1)
-        if z_stepper.emergency_stop:
-            return
+        positions = self._calculate_positions_for_burst()
 
-    # Calculate positions for each image
-    positions = []
-    if num_images > 1:
-        step_size = (end_pos - start_pos) / (num_images - 1)
-        for i in range(num_images):
-            positions.append(int(start_pos + i * step_size))
-
-    # Take images while moving
-    for pos in positions:
-        if z_stepper.emergency_stop:
-            return
-
-        # Move to position
-        z_stepper.move_to(pos, speed, acceleration)
-
-        # Wait for movement to complete
-        while z_stepper.is_moving:
-            time.sleep(0.05)
+        # Take images while moving
+        for i, pos in enumerate(positions):
             if z_stepper.emergency_stop:
                 return
 
-        # Capture image
-        time.sleep(0.1)  # Small delay for motor to settle
-        request = picam2.capture_request()
-        request.save("main", f"{burst_dir}/burst_{pos:04d}.jpeg")
-        request.release()
+            # Move to position
+            z_stepper.move_to(pos, self.speed, self.acceleration)
 
-    logging.info(f"Burst {burst_num} completed with {num_images} images")
+            # Wait for movement to complete
+            while z_stepper.is_moving:
+                time.sleep(0.05)
+                if z_stepper.emergency_stop:
+                    return
 
-    logging.info(f"Starting focus stacking")
-    try:
-        job = shinestacker.StackJob(burst_dir, working_path=os.getcwd(), input_path=burst_dir)
+            # Capture image
+            time.sleep(0.1)  # Small delay for motor to settle
+            request = picam2.capture_request()
+            request.save("main", f"{self.burst_dir}/burst_{pos:04d}.jpeg")
+            request.release()
+
+        logging.info(f"Burst completed with {self.num_images} images")
+
+        FocusStackingThread(self.burst_dir)
+
+    def _find_next_available_directory(self):
+        # Find next available burst directory
+        burst_num = 1
+        while os.path.exists(f"burst_{burst_num:03d}"):
+            burst_num += 1
+
+        burst_dir = f"burst_{burst_num:03d}"
+        return burst_dir
+
+    def _calculate_positions_for_burst(self):
+        positions = []
+        positions.append(self.start_pos)
+        if self.num_images > 1:
+            step_size = (self.end_pos - self.start_pos) / (self.num_images - 1)
+            for i in range(self.num_images):
+                positions.append(int(self.start_pos + i * step_size))
+        return positions
+
+
+class FocusStackingThread:
+    def __init__(self, burst_dir):
+        self.burst_dir = burst_dir
+        self.thread = Thread(target=self._perform_focus_stacking)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def _perform_focus_stacking(self):
+        logging.info(f"Starting focus stacking")
+
+        job = shinestacker.StackJob(
+            self.burst_dir, working_path=self.burst_dir, input_path=self.burst_dir
+        )
         job.add_action(
             shinestacker.CombinedActions(
-                "align", actions=[shinestacker.AlignFrames(), shinestacker.BalanceFrames()]
+                "align",
+                actions=[shinestacker.AlignFrames(), shinestacker.BalanceFrames()],
             )
         )
         # job.add_action(
@@ -587,15 +610,14 @@ def take_burst(start_pos, end_pos, num_images, speed, acceleration):
         #     )
         # )
         job.add_action(
-            shinestacker.FocusStack("stack", shinestacker.PyramidStack(), prefix="pyram_")
+            shinestacker.FocusStack(
+                "stack", shinestacker.PyramidStack(), prefix="pyram_"
+            )
         )
         # job.add_action(
         #     shinestacker.FocusStack("stack", shinestacker.DepthMapStack(), prefix="dmap_")
         # )
         job.run()
-    except Exception as e:
-        print(f"FOCUS STACKING FAIL! {e}")
-        logging.info(f"Failed to focus stacking: {e}")
 
 
 # Initialize pigpio
